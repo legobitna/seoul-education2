@@ -43,6 +43,7 @@ model Meeting {
   templateId  String?
   status      String           @default("draft")
   audioPath   String?
+  audioData   String?          // base64 encoded audio for serverless environments
   minutesJson String?
   errorMessage String?
   sendEmail   Boolean          @default(true)

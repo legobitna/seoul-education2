@@ -34,7 +34,18 @@ export async function processMeeting(
       progress: 40,
     });
 
-    const audioBuffer = await readRecording(meeting.audioPath);
+    // Try reading from filesystem first, then fall back to DB base64
+    let audioBuffer: Buffer;
+    try {
+      audioBuffer = await readRecording(meeting.audioPath);
+    } catch {
+      // Filesystem not available (e.g. Vercel cross-container), read from DB
+      if (meeting.audioData) {
+        audioBuffer = Buffer.from(meeting.audioData, "base64");
+      } else {
+        throw new Error("녹음 파일을 찾을 수 없습니다.");
+      }
+    }
     const attendeeEmails = meeting.attendees.map((a) => a.email);
 
     const minutes = await generateMinutesFromAudio(

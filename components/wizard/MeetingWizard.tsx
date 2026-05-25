@@ -165,9 +165,18 @@ export function MeetingWizard() {
         buffer = lines.pop() ?? "";
         for (const line of lines) {
           if (line.startsWith("data: ")) {
-            const event = JSON.parse(line.slice(6)) as SseEvent;
-            setSseEvent(event);
-            if (event.step === "error") throw new Error(event.error ?? event.message);
+            try {
+              const event = JSON.parse(line.slice(6)) as SseEvent;
+              setSseEvent(event);
+              if (event.step === "error") throw new Error(event.error ?? event.message);
+            } catch (parseErr) {
+              if (parseErr instanceof SyntaxError) {
+                // Ignore incomplete JSON from interrupted SSE stream
+                console.warn("SSE parse error:", parseErr.message);
+              } else {
+                throw parseErr;
+              }
+            }
           }
         }
       }

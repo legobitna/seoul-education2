@@ -26,11 +26,21 @@ export async function POST(
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const ext = file.name?.split(".").pop() ?? "webm";
-  const audioPath = await saveRecording(id, buffer, ext);
+
+  // Save to local filesystem (works locally, best-effort on Vercel /tmp)
+  let audioPath = "";
+  try {
+    audioPath = await saveRecording(id, buffer, ext);
+  } catch {
+    audioPath = `recordings/${id}.${ext}`;
+  }
+
+  // Also store base64 in DB so process endpoint can always access it
+  const audioBase64 = buffer.toString("base64");
 
   await prisma.meeting.update({
     where: { id },
-    data: { audioPath, status: "recording" },
+    data: { audioPath, audioData: audioBase64, status: "recording" },
   });
 
   return NextResponse.json({ ok: true, audioPath });
