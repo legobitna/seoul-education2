@@ -1,7 +1,11 @@
 import fs from "fs/promises";
 import path from "path";
+import os from "os";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR =
+  process.env.VERCEL === "1"
+    ? os.tmpdir()
+    : path.join(process.cwd(), "data");
 const RECORDINGS_DIR = path.join(DATA_DIR, "recordings");
 
 export async function ensureDataDirs(): Promise<void> {
