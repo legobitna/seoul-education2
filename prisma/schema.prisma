@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // file:../data/app.db (프로젝트 루트 data/)
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model AppSettings {
