@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 회의록 자동화 (로컬)
 
-## Getting Started
+회의를 녹음하고 종료하면 **Gemini API(무료)** 로 회의록을 작성한 뒤, **Gmail**으로 참석자에게 자동 발송하는 로컬 웹 앱입니다.
 
-First, run the development server:
+## 기능
+
+- 3단계 위저드: 회의 준비 → 녹음 → 자동 처리(전사·회의록·메일)
+- 자주 쓰는 참석자·회의 템플릿 저장
+- 회의록 Markdown 복사/다운로드
+- 액션 아이템 체크리스트
+
+## 사전 준비
+
+1. [Node.js 20+](https://nodejs.org)
+2. [Google AI Studio](https://aistudio.google.com/apikey) — Gemini API 키 (무료)
+3. Gmail + [앱 비밀번호](https://myaccount.google.com/apppasswords) (2단계 인증 필요)
+
+## 실행 방법
+
+### Windows (간편)
+
+`start.bat` 더블클릭
+
+### 수동
 
 ```bash
+npm install
+npx prisma db push
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+브라우저: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+최초 실행 시 **설정** 페이지에서 Gemini 키와 Gmail을 입력하세요.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 환경 변수 (선택)
 
-## Learn More
+`.env.example`을 참고해 `.env` 파일을 만들 수 있습니다. UI 설정이 우선합니다.
 
-To learn more about Next.js, take a look at the following resources:
+```
+DATABASE_URL="file:./data/app.db"
+GEMINI_API_KEY=
+SMTP_USER=
+SMTP_PASS=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 데이터 저장
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- DB: `data/app.db` (SQLite)
+- 녹음: `data/recordings/`
 
-## Deploy on Vercel
+`data/` 폴더는 백업을 권장합니다 (`.gitignore` 처리됨).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 제한 사항
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **브라우저**: Chrome/Edge 권장, 마이크 권한 필요
+- **Gemini 무료**: 일일/분당 요청 한도 — 장시간 회의는 90분 이내 권장
+- **Gmail**: 일일 발송 한도 약 500통
+- **로컬 전용**: 기본 `localhost`만 사용
+
+## 기술 스택
+
+- Next.js 15, TypeScript, Tailwind CSS
+- Prisma + SQLite
+- Google Gemini API (`gemini-2.5-flash`)
+- Nodemailer + Gmail SMTP

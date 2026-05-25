@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // file:../data/app.db (프로젝트 루트 data/)
+}
+
+model AppSettings {
+  key   String @id
+  value String
+}
+
+model MeetingTemplate {
+  id         String    @id @default(cuid())
+  name       String
+  promptHint String    @default("")
+  createdAt  DateTime  @default(now())
+  meetings   Meeting[]
+}
+
+model ContactGroup {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  contacts  Contact[]
+}
+
+model Contact {
+  id      String       @id @default(cuid())
+  groupId String
+  email   String
+  name    String?
+  group   ContactGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+}
+
+model Meeting {
+  id          String           @id @default(cuid())
+  title       String
+  templateId  String?
+  status      String           @default("draft")
+  audioPath   String?
+  minutesJson String?
+  errorMessage String?
+  sendEmail   Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  endedAt     DateTime?
+  emailSentAt DateTime?
+  template    MeetingTemplate? @relation(fields: [templateId], references: [id])
+  attendees   Attendee[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Attendee {
+  id        String  @id @default(cuid())
+  meetingId String
+  email     String
+  name      String?
+  mailSent  Boolean @default(false)
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+}
+
+model Complaint {
+  id              String   @id // 민원번호 (예: M2024-0001)
+  receivedAt      String   // 접수일
+  title           String   // 제목
+  content         String   // 민원내용
+  category        String   // AI 분류 카테고리
+  confidence      Int      // 신뢰도 점수 (0 ~ 100)
+  isUncertain     Boolean  @default(false) // 분류 불확실 여부
+  uncertainReason String?  // 분류 불확실 사유
+  classifiedAt    DateTime @default(now())
+}
+
